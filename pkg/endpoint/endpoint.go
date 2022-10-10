@@ -13,6 +13,7 @@ import (
 	"github.com/k3s-io/kine/pkg/drivers/mysql"
 	"github.com/k3s-io/kine/pkg/drivers/pgsql"
 	"github.com/k3s-io/kine/pkg/drivers/sqlite"
+	"github.com/k3s-io/kine/pkg/drivers/sqlserver"
 	"github.com/k3s-io/kine/pkg/metrics"
 	"github.com/k3s-io/kine/pkg/server"
 	"github.com/k3s-io/kine/pkg/tls"
@@ -34,6 +35,7 @@ const (
 	JetStreamBackend = "jetstream"
 	MySQLBackend     = "mysql"
 	PostgresBackend  = "postgres"
+	SQLServer        = "sqlserver"
 )
 
 type Config struct {
@@ -246,6 +248,8 @@ func getKineStorageBackend(ctx context.Context, driver, dsn string, cfg Config) 
 		backend, err = pgsql.New(ctx, dsn, cfg.BackendTLSConfig, cfg.ConnectionPoolConfig, cfg.MetricsRegisterer)
 	case MySQLBackend:
 		backend, err = mysql.New(ctx, dsn, cfg.BackendTLSConfig, cfg.ConnectionPoolConfig, cfg.MetricsRegisterer)
+	case SQLServer:
+		backend, err = sqlserver.New(ctx, dsn, cfg.BackendTLSConfig, cfg.ConnectionPoolConfig, cfg.MetricsRegisterer)
 	case JetStreamBackend:
 		backend, err = jetstream.New(ctx, dsn, cfg.BackendTLSConfig)
 	default:

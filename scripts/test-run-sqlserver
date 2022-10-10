@@ -1,0 +1,34 @@
+#!/bin/bash
+
+start-test() {
+    local ip=$(cat $TEST_DIR/databases/*/metadata/ip)
+    local port=$(cat $TEST_DIR/databases/*/metadata/port)
+    local pass=$(cat $TEST_DIR/databases/*/metadata/password)
+    local image=$(cat $TEST_DIR/databases/*/metadata/image)
+    DB_CONNECTION_TEST="
+        docker run --rm
+        --name connection-test
+        $image
+        /opt/mssql-tools/bin/sqlcmd
+          -S
+          $ip
+          -U
+          sa
+          -P
+          $pass
+          -Q
+          'SELECT @@SERVERNAME'" \
+    timeout --foreground 1m bash -c "wait-for-db-connection"
+    KINE_IMAGE=$IMAGE KINE_ENDPOINT="sqlserver://sa:$pass@localhost" provision-kine
+    local kine_url=$(cat $TEST_DIR/kine/*/metadata/url)
+    K3S_DATASTORE_ENDPOINT=$kine_url provision-cluster
+}
+export -f start-test
+
+VERSION_LIST="\
+    mssql 2019-CU18-ubuntu-20.04"
+
+while read ENGINE VERSION; do
+    LABEL=$ENGINE-$VERSION DB_PASSWORD_ENV=MSSQL_SA_PASSWORD DB_IMAGE=mcr.microsoft.com/mssql/server:$VERSION run-test
+done <<< $VERSION_LIST
+

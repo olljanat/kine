@@ -23,6 +23,9 @@ echo "Did test-run-mysql $?"
 . ./scripts/test-run-postgres
 echo "Did test-run-postgres $?"
 
+. ./scripts/test-run-sqlserver
+echo "Did test-run-sqlserver $?"
+
 . ./scripts/test-run-cockroachdb
 echo "Did test-run-cockroachdb $?"
 
